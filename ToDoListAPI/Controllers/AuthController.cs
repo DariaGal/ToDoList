@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models.Users;
-using ToDoListAPI.Auth;
 using ToDoListAPI.Controllers.Authentication;
 
 namespace ToDoListAPI.Controllers
@@ -23,6 +22,12 @@ namespace ToDoListAPI.Controllers
         public AuthController(IUserService repository)
         {
             users = repository;
+        }
+
+        [AllowAnonymous]
+        public IActionResult Index()
+        {
+            return Ok("Hello, it's To Do List!");
         }
 
         [AllowAnonymous]
