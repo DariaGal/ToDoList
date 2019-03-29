@@ -16,9 +16,13 @@ namespace ModelsConverters.Tasks
                 throw new ArgumentNullException(nameof(clientQuery));
             }
 
-            var sortBy = TaskSortByConverter.Convert(clientQuery.SortBy.Value);
-            var sortType = SortTypeConverter.Convert(clientQuery.Sort.Value);
-            var priority = TaskPriorityConverter.Convert(clientQuery.Priority.Value);
+            var sortBy = clientQuery.SortBy.HasValue ? TaskSortByConverter.Convert(clientQuery.SortBy.Value)
+                : (Model.TaskSortBy?)null;
+                
+            var sortType = clientQuery.Sort.HasValue ? SortTypeConverter.Convert(clientQuery.Sort.Value)
+                :(Models.SortType?)null;
+            var priority = clientQuery.Priority.HasValue ? TaskPriorityConverter.Convert(clientQuery.Priority.Value)
+                :(Model.TaskPriority?) null;
 
             var modelQuery = new Model.TaskInfoSearchQuery
             {

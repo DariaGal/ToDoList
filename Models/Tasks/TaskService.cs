@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -148,7 +149,9 @@ namespace Models.Tasks
 
             cancelltionToken.ThrowIfCancellationRequested();
 
-            FilterDefinition<MyTask> filter = CreateFieldfilter(query);
+
+            FilterDefinition<MyTask> filter = CreateFieldfilter(userId,query);
+
 
             IMongoCollection<MyTask> filteredTask = _tasks;
             if (filter != null)
@@ -159,12 +162,29 @@ namespace Models.Tasks
             var sort = query.Sort ?? SortType.Ascending;
             var sortBy = query.SortBy ?? TaskSortBy.Creation;
 
-            Func<MyTask, TaskSortBy, object> setSortBy = (t, s) => SetSortByFunc(t, s);
-           
-            var resultTasks = (sort == SortType.Ascending)
-                ? filteredTask.Find(t => true).SortBy(t => setSortBy(t, sortBy)).ToEnumerable()
-                : filteredTask.Find(t => true).SortByDescending(t => setSortBy(t, sortBy)).ToEnumerable();
+            IEnumerable<MyTask> resultTasks = null;
+            
+            switch(sortBy)
+            {
+                case TaskSortBy.LastUpdate:
+                    resultTasks = (sort == SortType.Ascending)
+                        ? filteredTask.Find(t => true).SortBy(t => t.LastUpdatedAt).ToEnumerable()
+                        : filteredTask.Find(t => true).SortByDescending(t => t.LastUpdatedAt).ToEnumerable();
+                    break;
+                case TaskSortBy.Creation:
+                    resultTasks = (sort == SortType.Ascending)
+                        ? filteredTask.Find(t => true).SortBy(t => t.CreatedAt).ToEnumerable()
+                        : filteredTask.Find(t => true).SortByDescending(t => t.CreatedAt).ToEnumerable();
+                    break;
+                case TaskSortBy.Priority:
+                    resultTasks = (sort == SortType.Ascending)
+                        ? filteredTask.Find(t => true).SortBy(t => t.Priority).ToEnumerable()
+                        : filteredTask.Find(t => true).SortByDescending(t => t.Priority).ToEnumerable();
+                    break;
 
+                default:
+                    throw new ArgumentException($"Unknown note sort by value \"{sortBy}\".");
+            }
 
             if (query.Offset != null)
             {
@@ -195,13 +215,16 @@ namespace Models.Tasks
             }
         }
 
-        private FilterDefinition<MyTask> CreateFieldfilter(TaskInfoSearchQuery query)
+        private FilterDefinition<MyTask> CreateFieldfilter(Guid userId, TaskInfoSearchQuery query)
         {
             FilterDefinition<MyTask> filter = null;
+            
+
+          //  filter = Builders<MyTask>.Filter.Eq("_id", userId);
 
             if (query.CreatedFrom != null)
             {
-                filter = Builders<MyTask>.Filter.Gte(t => t.CreatedAt, query.CreatedFrom.Value);
+                filter = filter & Builders<MyTask>.Filter.Gte(t => t.CreatedAt, query.CreatedFrom.Value);
             }
 
             if (query.CreatedTo != null)

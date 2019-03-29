@@ -27,7 +27,16 @@ namespace ToDoListAPI.Controllers
         [AllowAnonymous]
         public IActionResult Index()
         {
-            return Ok("Hello, it's To Do List!");
+            return Ok("Hello, it's To Do List!\n" +
+                "....................／＞  フ\n" +
+                "...................| _  _ l\n"+
+                "................／` ミ ＿xノ\n"+
+                ".............../         |\n"+
+                "............../ ヽ       ﾉ\n"+
+                "..............│     | | |\n"+
+                "..........／￣|     | | |\n"+
+                "..........| (￣ヽ＿_ヽ___)\n"+
+                "...........＼二つ\n");
         }
 
         [AllowAnonymous]
