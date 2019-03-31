@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,10 @@ namespace ToDoListAPI.Controllers
             {
                 return this.BadRequest();
             }
-            var userId = HttpContext.Items["userId"].ToString();
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            //var userId = HttpContext.Items["userId"].ToString();
             var modelCreationInfo = TaskCreateInfoConverter.Convert(userId, creationInfo);
             var modelTaskInfo = await this.tasks.CreateAsync(modelCreationInfo, cancellationToken);
             var clientTaskInfo = TaskInfoConverter.Convert(modelTaskInfo);

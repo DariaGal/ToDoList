@@ -148,16 +148,16 @@ namespace Models.Tasks
             }
 
             cancelltionToken.ThrowIfCancellationRequested();
-
+            
 
             FilterDefinition<MyTask> filter = CreateFieldfilter(userId,query);
 
-
+            
             IMongoCollection<MyTask> filteredTask = _tasks;
-            if (filter != null)
+           /* if (filter != null)
             {
                 filteredTask = (IMongoCollection<MyTask>)filteredTask.Find(filter);
-            }
+            }*/
 
             var sort = query.Sort ?? SortType.Ascending;
             var sortBy = query.SortBy ?? TaskSortBy.Creation;
@@ -168,18 +168,18 @@ namespace Models.Tasks
             {
                 case TaskSortBy.LastUpdate:
                     resultTasks = (sort == SortType.Ascending)
-                        ? filteredTask.Find(t => true).SortBy(t => t.LastUpdatedAt).ToEnumerable()
-                        : filteredTask.Find(t => true).SortByDescending(t => t.LastUpdatedAt).ToEnumerable();
+                        ? filteredTask.Find(filter).SortBy(t => t.LastUpdatedAt).ToEnumerable()
+                        : filteredTask.Find(filter).SortByDescending(t => t.LastUpdatedAt).ToEnumerable();
                     break;
                 case TaskSortBy.Creation:
                     resultTasks = (sort == SortType.Ascending)
-                        ? filteredTask.Find(t => true).SortBy(t => t.CreatedAt).ToEnumerable()
-                        : filteredTask.Find(t => true).SortByDescending(t => t.CreatedAt).ToEnumerable();
+                        ? filteredTask.Find(filter).SortBy(t => t.CreatedAt).ToEnumerable()
+                        : filteredTask.Find(filter).SortByDescending(t => t.CreatedAt).ToEnumerable();
                     break;
                 case TaskSortBy.Priority:
                     resultTasks = (sort == SortType.Ascending)
-                        ? filteredTask.Find(t => true).SortBy(t => t.Priority).ToEnumerable()
-                        : filteredTask.Find(t => true).SortByDescending(t => t.Priority).ToEnumerable();
+                        ? filteredTask.Find(filter).SortBy(t => t.Priority).ToEnumerable()
+                        : filteredTask.Find(filter).SortByDescending(t => t.Priority).ToEnumerable();
                     break;
 
                 default:
@@ -217,14 +217,14 @@ namespace Models.Tasks
 
         private FilterDefinition<MyTask> CreateFieldfilter(Guid userId, TaskInfoSearchQuery query)
         {
-            FilterDefinition<MyTask> filter = null;
+            FilterDefinition<MyTask> filter = FilterDefinition<MyTask>.Empty;
             
 
           //  filter = Builders<MyTask>.Filter.Eq("_id", userId);
 
             if (query.CreatedFrom != null)
             {
-                filter = filter & Builders<MyTask>.Filter.Gte(t => t.CreatedAt, query.CreatedFrom.Value);
+                filter = Builders<MyTask>.Filter.Gte(t => t.CreatedAt, query.CreatedFrom.Value);
             }
 
             if (query.CreatedTo != null)
